@@ -25,7 +25,7 @@ export async function fetchTopRated() {
 }
 
 export async function fetchMovieDetails(id: string) {
-  const res = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=videos,credits`, { cache: "no-store" });
+  const res = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=videos,credits,watch/providers`, { cache: "no-store" });
   const data = await res.json();
   return data;
 }
@@ -35,6 +35,7 @@ export async function searchMovies(query: string) {
   const data = await res.json();
   return data.results || [];
 }
+
 export async function fetchArchiveMovie(title: string) {
   const query = encodeURIComponent(title);
   const res = await fetch(

@@ -12,6 +12,12 @@ export default async function MoviePage({ params }: Props) {
     (v: any) => v.type === 'Trailer' && v.site === 'YouTube'
   );
 
+  // NEW: Get watch providers
+  const providers = movie['watch/providers']?.results?.US
+  const stream = providers?.flatrate || [] // Netflix, Max, Disney+
+  const rent = providers?.rent || [] // Apple, Amazon
+  const buy = providers?.buy || [] // Apple, Amazon
+
   return (
     <main className="bg-gray-950 min-h-screen text-white">
       {/* Backdrop */}
@@ -42,13 +48,56 @@ export default async function MoviePage({ params }: Props) {
             ))}
           </div>
           <p className="mt-4 text-gray-300 max-w-2xl">{movie.overview}</p>
-          <Link href={`/watch/${id}`}>
-            <button className="mt-6 bg-yellow-400 hover:bg-yellow-500 text-black px-8 py-3 rounded-lg font-bold text-lg">
-              ▶ Watch Now
-            </button>
-          </Link>
+
+          {/* REMOVE THIS: <Link href={`/watch/${id}`}>... </Link>
+              Replace with providers below */}
         </div>
       </div>
+
+      {/* NEW: Where to Watch Section */}
+      <section className="px-8 py-6">
+        <h2 className="text-2xl font-bold mb-4">📺 Where to Watch</h2>
+
+        {stream.length > 0 && (
+          <div className="mb-4">
+            <h3 className="font-semibold mb-2 text-yellow-400">Stream</h3>
+            <div className="flex gap-3 flex-wrap">
+              {stream.map((p: any) => (
+                <a
+                  key={p.provider_id}
+                  href={providers.link}
+                  target="_blank"
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded-lg font-bold"
+                >
+                  ▶ {p.provider_name}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {rent.length > 0 && (
+          <div className="mb-4">
+            <h3 className="font-semibold mb-2 text-gray-300">Rent</h3>
+            <div className="flex gap-3 flex-wrap">
+              {rent.map((p: any) => (
+                <a
+                  key={p.provider_id}
+                  href={providers.link}
+                  target="_blank"
+                  className="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg font-bold"
+                >
+                  {p.provider_name}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {stream.length === 0 && rent.length === 0 && (
+          <p className="text-gray-400">Not available for streaming yet. Check back soon!</p>
+        )}
+      </section>
 
       {/* Trailer */}
       {trailer && (
@@ -71,7 +120,7 @@ export default async function MoviePage({ params }: Props) {
           {movie.credits?.cast?.slice(0, 10).map((person: any) => (
             <div key={person.id} className="min-w-[120px] text-center">
               <img
-                src={person.profile_path ? getImageUrl(person.profile_path) : '/placeholder.png'}
+                src={person.profile_path? getImageUrl(person.profile_path) : '/placeholder.png'}
                 alt={person.name}
                 className="rounded-full w-20 h-20 object-cover mx-auto"
               />
