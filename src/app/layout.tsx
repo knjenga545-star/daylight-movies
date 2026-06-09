@@ -15,8 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Daylight Movies - Watch Free Movies",
-  description: "Find where to stream, rent, or buy the latest movies legally",
+  title: "Daylight Movies - Find Where to Stream Movies",
+  description: "Find where to stream, rent, or buy the latest movies legally. Official links to Netflix, Max, Prime Video, Apple TV and more.",
+  other: {
+    'google-adsense-account': 'ca-pub-2295397566691303',
+  },
 };
 
 export default function RootLayout({
