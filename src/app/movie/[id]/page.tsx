@@ -8,20 +8,34 @@ type Props = {
 export default async function MoviePage({ params }: Props) {
   const { id } = await params;
   const movie = await fetchMovieDetails(id);
+
+  // NEW: Return 404 page if movie fetch failed
+  if (!movie) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white p-8">
+        <h1 className="text-3xl font-bold mb-4">Movie not found</h1>
+        <p className="text-gray-400 mb-6">We couldn't load this movie. It may not exist or TMDB is down.</p>
+        <Link href="/" className="text-yellow-400 hover:text-yellow-300">
+          ← Back to home
+        </Link>
+      </div>
+    );
+  }
+
   const trailer = movie.videos?.results?.find(
     (v: any) => v.type === 'Trailer' && v.site === 'YouTube'
   );
 
-  // NEW: Get watch providers
-  const providers = movie['watch/providers']?.results?.US
-  const stream = providers?.flatrate || [] // Netflix, Max, Disney+
-  const rent = providers?.rent || [] // Apple, Amazon
-  const buy = providers?.buy || [] // Apple, Amazon
+  // Safe access: movie exists here, but providers might not
+  const providers = movie['watch/providers']?.results?.US;
+  const stream = providers?.flatrate || [];
+  const rent = providers?.rent || [];
+  const buy = providers?.buy || [];
 
   return (
     <main className="bg-gray-950 min-h-screen text-white">
       {/* Backdrop */}
-      <div className="relative h-[50vh] w-full overflow-hidden">
+      <div className="relative h- w-full overflow-hidden">
         <img
           src={getImageUrl(movie.backdrop_path, 'original')}
           alt={movie.title || 'Movie'}
@@ -40,21 +54,20 @@ export default async function MoviePage({ params }: Props) {
         <div className="flex-1">
           <h1 className="text-4xl font-bold">{movie.title}</h1>
           <p className="text-gray-400 mt-1">
-            {movie.release_date?.slice(0, 4)} • {movie.runtime} min • ⭐ {movie.vote_average?.toFixed(1)}
+            {movie.release_date?.slice(0, 4)} • {movie.runtime || '?'} min • ⭐ {movie.vote_average?.toFixed(1) || 'N/A'}
           </p>
           <div className="flex gap-2 mt-3 flex-wrap">
             {movie.genres?.map((g: any) => (
-              <span key={g.id} className="bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-semibold">{g.name}</span>
+              <span key={g.id} className="bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-semibold">
+                {g.name}
+              </span>
             ))}
           </div>
           <p className="mt-4 text-gray-300 max-w-2xl">{movie.overview}</p>
-
-          {/* REMOVE THIS: <Link href={`/watch/${id}`}>... </Link>
-              Replace with providers below */}
         </div>
       </div>
 
-      {/* NEW: Where to Watch Section */}
+      {/* Where to Watch Section */}
       <section className="px-8 py-6">
         <h2 className="text-2xl font-bold mb-4">📺 Where to Watch</h2>
 
@@ -65,8 +78,9 @@ export default async function MoviePage({ params }: Props) {
               {stream.map((p: any) => (
                 <a
                   key={p.provider_id}
-                  href={providers.link}
+                  href={providers?.link || `https://www.themoviedb.org/movie/${id}/watch`}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded-lg font-bold"
                 >
                   ▶ {p.provider_name}
@@ -83,8 +97,9 @@ export default async function MoviePage({ params }: Props) {
               {rent.map((p: any) => (
                 <a
                   key={p.provider_id}
-                  href={providers.link}
+                  href={providers?.link || `https://www.themoviedb.org/movie/${id}/watch`}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg font-bold"
                 >
                   {p.provider_name}
@@ -118,7 +133,7 @@ export default async function MoviePage({ params }: Props) {
         <h2 className="text-2xl font-bold mb-4">🎭 Cast</h2>
         <div className="flex gap-4 overflow-x-auto pb-4">
           {movie.credits?.cast?.slice(0, 10).map((person: any) => (
-            <div key={person.id} className="min-w-[120px] text-center">
+            <div key={person.id} className="min-w- text-center">
               <img
                 src={person.profile_path? getImageUrl(person.profile_path) : '/placeholder.png'}
                 alt={person.name}
