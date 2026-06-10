@@ -1,6 +1,9 @@
 import { fetchTrending, fetchPopular, fetchTopRated, getImageUrl } from '@/lib/tmdb';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic' // Fix 1: Tell Next.js this page is dynamic
+export const revalidate = 3600 // Fix 2: Cache for 1 hour so TMDB doesn't rate-limit you
+
 export default async function Home() {
   const [trending, popular, topRated] = await Promise.all([
     fetchTrending(),
@@ -8,70 +11,93 @@ export default async function Home() {
     fetchTopRated(),
   ]);
 
+  // Fix 3: Handle empty API responses so build doesn't crash
+  const featured = trending?.[0];
+
   return (
     <main className="bg-gray-950 min-h-screen text-white">
-      {/* Hero */}
-      <div className="relative h-[70vh] w-full overflow-hidden">
-        <img
-          src={getImageUrl(trending[0].backdrop_path, 'original')}
-          alt={trending[0].title}
-          className="w-full h-full object-cover brightness-50"
-        />
-        <div className="absolute bottom-10 left-10">
-          <h1 className="text-5xl font-bold mb-3">{trending[0].title}</h1>
-          <p className="text-gray-300 max-w-xl">{trending[0].overview}</p>
-          <Link href={`/movie/${trending[0].id}`}>
-            <button className="mt-4 bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-lg font-semibold">
-              ▶ Watch Now
-            </button>
-          </Link>
+      {/* Hero - only render if featured exists */}
+      {featured && (
+        <div className="relative h-[70vh] w-full overflow-hidden">
+          <img
+            src={getImageUrl(featured.backdrop_path, 'original')}
+            alt={featured.title}
+            className="w-full h-full object-cover brightness-50"
+          />
+          <div className="absolute bottom-10 left-10">
+            <h1 className="text-5xl font-bold mb-3">{featured.title}</h1>
+            <p className="text-gray-300 max-w-xl">{featured.overview}</p>
+            <Link href={`/movie/${featured.id}`}>
+              <button className="mt-4 bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-lg font-semibold">
+                ▶ View Details
+              </button>
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Trending */}
-      <section className="px-8 py-10">
-        <h2 className="text-2xl font-bold mb-4">🔥 Trending</h2>
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {trending.map((movie: any) => (
-            <Link href={`/movie/${movie.id}`} key={movie.id}>
-              <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
-                <img src={getImageUrl(movie.poster_path)} alt={movie.title} className="rounded-lg" />
-                <p className="mt-2 text-sm text-center">{movie.title}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {trending?.length > 0 && (
+        <section className="px-8 py-10">
+          <h2 className="text-2xl font-bold mb-4">🔥 Trending</h2>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {trending.map((movie: any) => (
+              <Link href={`/movie/${movie.id}`} key={movie.id}>
+                <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
+                  <img
+                    src={getImageUrl(movie.poster_path)}
+                    alt={movie.title}
+                    className="rounded-lg w-full"
+                  />
+                  <p className="mt-2 text-sm text-center">{movie.title}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Popular */}
-      <section className="px-8 py-10">
-        <h2 className="text-2xl font-bold mb-4">⭐ Popular</h2>
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {popular.map((movie: any) => (
-            <Link href={`/movie/${movie.id}`} key={movie.id}>
-              <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
-                <img src={getImageUrl(movie.poster_path)} alt={movie.title} className="rounded-lg" />
-                <p className="mt-2 text-sm text-center">{movie.title}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {popular?.length > 0 && (
+        <section className="px-8 py-10">
+          <h2 className="text-2xl font-bold mb-4">⭐ Popular</h2>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {popular.map((movie: any) => (
+              <Link href={`/movie/${movie.id}`} key={movie.id}>
+                <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
+                  <img
+                    src={getImageUrl(movie.poster_path)}
+                    alt={movie.title}
+                    className="rounded-lg w-full"
+                  />
+                  <p className="mt-2 text-sm text-center">{movie.title}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Top Rated */}
-      <section className="px-8 py-10">
-        <h2 className="text-2xl font-bold mb-4">🏆 Top Rated</h2>
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {topRated.map((movie: any) => (
-            <Link href={`/movie/${movie.id}`} key={movie.id}>
-              <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
-                <img src={getImageUrl(movie.poster_path)} alt={movie.title} className="rounded-lg" />
-                <p className="mt-2 text-sm text-center">{movie.title}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {topRated?.length > 0 && (
+        <section className="px-8 py-10">
+          <h2 className="text-2xl font-bold mb-4">🏆 Top Rated</h2>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {topRated.map((movie: any) => (
+              <Link href={`/movie/${movie.id}`} key={movie.id}>
+                <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
+                  <img
+                    src={getImageUrl(movie.poster_path)}
+                    alt={movie.title}
+                    className="rounded-lg w-full"
+                  />
+                  <p className="mt-2 text-sm text-center">{movie.title}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

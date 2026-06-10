@@ -2,13 +2,14 @@ const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
 export function getImageUrl(path: string, size: string = "w500") {
-  if (!path) return "/placeholder.png"; // Added fallback
+  if (!path) return "/placeholder.png";
   return `https://image.tmdb.org/t/p/${size}${path}`;
 }
 
 async function safeFetch(url: string) {
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    // Fix: Use revalidate instead of no-store so Next.js can build
+    const res = await fetch(url, { next: { revalidate: 3600 } });
     
     if (!res.ok) {
       console.error(`TMDB API error: ${res.status} for ${url}`);
@@ -23,29 +24,33 @@ async function safeFetch(url: string) {
 }
 
 export async function fetchTrending() {
+  if (!API_KEY) return [];
   const data = await safeFetch(`${BASE_URL}/trending/movie/day?api_key=${API_KEY}`);
   return data?.results || [];
 }
 
 export async function fetchPopular() {
+  if (!API_KEY) return [];
   const data = await safeFetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}`);
   return data?.results || [];
 }
 
 export async function fetchTopRated() {
+  if (!API_KEY) return [];
   const data = await safeFetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}`);
   return data?.results || [];
 }
 
 export async function fetchMovieDetails(id: string) {
+  if (!API_KEY) return null;
   const data = await safeFetch(
     `${BASE_URL}/movie/${id}?api_key=${API_KEY}&append_to_response=videos,credits,watch/providers`
   );
-  return data; // Returns null if failed, instead of crashing
+  return data;
 }
 
 export async function searchMovies(query: string) {
-  if (!query.trim()) return [];
+  if (!query.trim() || !API_KEY) return [];
   const data = await safeFetch(
     `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`
   );
