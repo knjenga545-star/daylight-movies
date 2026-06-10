@@ -8,14 +8,13 @@ export function getImageUrl(path: string, size: string = "w500") {
 
 async function safeFetch(url: string) {
   try {
-    // Fix: Use revalidate instead of no-store so Next.js can build
-    const res = await fetch(url, { next: { revalidate: 3600 } });
-    
+    const res = await fetch(url, { next: { revalidate: 3600 } }); // NOT no-store
+
     if (!res.ok) {
       console.error(`TMDB API error: ${res.status} for ${url}`);
       return null;
     }
-    
+
     return await res.json();
   } catch (error) {
     console.error('Fetch failed:', error);
@@ -50,7 +49,7 @@ export async function fetchMovieDetails(id: string) {
 }
 
 export async function searchMovies(query: string) {
-  if (!query.trim() || !API_KEY) return [];
+  if (!query.trim() ||!API_KEY) return [];
   const data = await safeFetch(
     `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`
   );

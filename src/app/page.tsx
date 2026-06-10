@@ -1,8 +1,7 @@
 import { fetchTrending, fetchPopular, fetchTopRated, getImageUrl } from '@/lib/tmdb';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic' // Fix 1: Tell Next.js this page is dynamic
-export const revalidate = 3600 // Fix 2: Cache for 1 hour so TMDB doesn't rate-limit you
+export const dynamic = 'force-dynamic' // THIS LINE IS MANDATORY
 
 export default async function Home() {
   const [trending, popular, topRated] = await Promise.all([
@@ -11,12 +10,10 @@ export default async function Home() {
     fetchTopRated(),
   ]);
 
-  // Fix 3: Handle empty API responses so build doesn't crash
   const featured = trending?.[0];
 
   return (
     <main className="bg-gray-950 min-h-screen text-white">
-      {/* Hero - only render if featured exists */}
       {featured && (
         <div className="relative h-[70vh] w-full overflow-hidden">
           <img
@@ -36,7 +33,6 @@ export default async function Home() {
         </div>
       )}
 
-      {/* Trending */}
       {trending?.length > 0 && (
         <section className="px-8 py-10">
           <h2 className="text-2xl font-bold mb-4">🔥 Trending</h2>
@@ -44,11 +40,7 @@ export default async function Home() {
             {trending.map((movie: any) => (
               <Link href={`/movie/${movie.id}`} key={movie.id}>
                 <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
-                  <img
-                    src={getImageUrl(movie.poster_path)}
-                    alt={movie.title}
-                    className="rounded-lg w-full"
-                  />
+                  <img src={getImageUrl(movie.poster_path)} alt={movie.title} className="rounded-lg w-full" />
                   <p className="mt-2 text-sm text-center">{movie.title}</p>
                 </div>
               </Link>
@@ -57,7 +49,6 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Popular */}
       {popular?.length > 0 && (
         <section className="px-8 py-10">
           <h2 className="text-2xl font-bold mb-4">⭐ Popular</h2>
@@ -65,11 +56,7 @@ export default async function Home() {
             {popular.map((movie: any) => (
               <Link href={`/movie/${movie.id}`} key={movie.id}>
                 <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
-                  <img
-                    src={getImageUrl(movie.poster_path)}
-                    alt={movie.title}
-                    className="rounded-lg w-full"
-                  />
+                  <img src={getImageUrl(movie.poster_path)} alt={movie.title} className="rounded-lg w-full" />
                   <p className="mt-2 text-sm text-center">{movie.title}</p>
                 </div>
               </Link>
@@ -78,7 +65,6 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Top Rated */}
       {topRated?.length > 0 && (
         <section className="px-8 py-10">
           <h2 className="text-2xl font-bold mb-4">🏆 Top Rated</h2>
@@ -86,11 +72,7 @@ export default async function Home() {
             {topRated.map((movie: any) => (
               <Link href={`/movie/${movie.id}`} key={movie.id}>
                 <div className="min-w-[160px] cursor-pointer hover:scale-105 transition">
-                  <img
-                    src={getImageUrl(movie.poster_path)}
-                    alt={movie.title}
-                    className="rounded-lg w-full"
-                  />
+                  <img src={getImageUrl(movie.poster_path)} alt={movie.title} className="rounded-lg w-full" />
                   <p className="mt-2 text-sm text-center">{movie.title}</p>
                 </div>
               </Link>
